@@ -4,28 +4,35 @@ import 'ds-auth/auth.sol';
 
 import 'erc20/erc20.sol';
 
-contract Faucet is DSAuth {
+contract FaucetEvents {
+    event LogSet(address indexed token, uint256 amount);
+    event LogClaim(address indexed token, address indexed who, uint256 amount);
+}
 
-    mapping (address => uint256) public tokens;
+contract Faucet is DSAuth, FaucetEvents {
+
+    mapping (address => uint256) public amounts;
 
     mapping (address => mapping (address => bool)) claimed;
 
     uint256 last_token;
-    
-    function next_id() internal returns (uint256) {
-        last_token++;
-        return last_token;
+
+    function claim(ERC20 token) returns (bool) {
+        if (claimed[msg.sender][token]) return false;
+
+        if (ERC20(token).transfer(msg.sender, amounts[token])) {
+            claimed[msg.sender][token] = true;
+            LogClaim(token, msg.sender, amounts[token]);
+            return true;
+        }
     }
 
     function set(ERC20 token, uint256 amount) auth {
-        tokens[token] = amount;
-    }
+        amounts[token] = amount;
+        LogSet(token, amount);
+    }    
 
-    function claim(ERC20 token) returns (bool) {
-        // if (claimed[msg.sender][token]) return false;
-
-        // if (token.transfer(msg.sender, amount)) {
-        //     claimed[msg.sender][token] = true;
-        // }
+    function drain(ERC20 token) auth {
+        ERC20(token).transfer(msg.sender, ERC20(token).balanceOf(this));
     }
 }
