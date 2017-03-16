@@ -17,10 +17,14 @@ contract Faucet is DSAuth, FaucetEvents {
 
     uint256 last_token;
 
+    function hasBalance(ERC20 token) constant returns (bool) {
+        return token.balanceOf(this) > 0;
+    }
+
     function claim(ERC20 token) returns (bool) {
         if (claimed[msg.sender][token]) return false;
 
-        if (ERC20(token).transfer(msg.sender, amounts[token])) {
+        if (token.transfer(msg.sender, amounts[token])) {
             claimed[msg.sender][token] = true;
             LogClaim(token, msg.sender, amounts[token]);
             return true;
@@ -33,6 +37,6 @@ contract Faucet is DSAuth, FaucetEvents {
     }    
 
     function drain(ERC20 token) auth {
-        ERC20(token).transfer(msg.sender, ERC20(token).balanceOf(this));
+        token.transfer(msg.sender, token.balanceOf(this));
     }
 }

@@ -16,6 +16,9 @@ contract User {
     function claim(ERC20 token) returns (bool) {
         return faucet.claim(token);
     }
+    function drain(ERC20 token) {
+        return faucet.drain(token);
+    }
 }
 
 contract Test is DSTest {
@@ -39,6 +42,13 @@ contract Test is DSTest {
     function testBalance() {
         assertEq(mkr.balanceOf(faucet), initialBalance);
         assertEq(dai.balanceOf(faucet), initialBalance);
+        assert(faucet.hasBalance(mkr));
+        assert(faucet.hasBalance(dai));
+    }
+
+    function testNoBalance() {
+        ERC20 t = new DSTokenBase(0);
+        assert(!faucet.hasBalance(t));
     }
 
     function testClaim() {
@@ -68,5 +78,9 @@ contract Test is DSTest {
 
     function testFailUnauthorizedSet() {
         user.set(mkr, 10);
+    }
+
+    function testFailUnauthorizedDrain() {
+        user.drain(mkr);
     }
 }
