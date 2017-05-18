@@ -2,6 +2,7 @@ pragma solidity ^0.4.8;
 
 import 'ds-test/test.sol';
 import 'ds-token/base.sol';
+import 'ds-token/token.sol';
 
 import './faucet.sol';
 
